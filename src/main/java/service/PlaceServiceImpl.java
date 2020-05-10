@@ -1,10 +1,13 @@
 package service;
 
 import model.Place;
+import persistence.DbStore;
+import persistence.DbStoreImpl;
 
 import java.util.Collection;
 
 public class PlaceServiceImpl implements PlaceService {
+    private final DbStore dbStore = DbStoreImpl.getInstance();
     private static final PlaceService INSTANCE = new PlaceServiceImpl();
 
     private PlaceServiceImpl() {
@@ -16,11 +19,11 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public Collection<Place> getPlaces() {
-        return null;
+        return dbStore.getPlaces();
     }
 
     @Override
-    public Place setPlace(Place place) {
-        return null;
+    public boolean setPlace(Place place) {
+        return  dbStore.setPlace(place);
     }
 }

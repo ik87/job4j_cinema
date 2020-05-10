@@ -6,5 +6,5 @@ import java.util.Collection;
 
 public interface PlaceService {
     Collection<Place> getPlaces();
-    Place setPlace(Place place);
+    boolean setPlace(Place place);
 }

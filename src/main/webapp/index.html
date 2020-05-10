@@ -65,6 +65,36 @@
         
     })
 
+ //long polling
+
+
+
+ function poll(){
+        $.ajax({ url: "serv", success: function(data){
+                //Update your dashboard gauge
+                console.log(data);
+            }, dataType: "json", complete: poll, timeout: 30000 });
+ };
+
+ poll();
+/* var messagesWaiting = false;
+ function getMessages(){
+     if(!messagesWaiting){
+         messagesWaiting = true;
+         var xmlhttp = new XMLHttpRequest();
+         xmlhttp.onreadystatechange=function(){
+             if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+                 messagesWaiting = false;
+/!*                 var contentElement = document.getElementById("content");
+                 contentElement.innerHTML = xmlhttp.responseText + contentElement.innerHTML;*!/
+                console.log(xmlhttp.responseText);
+             }
+         }
+         xmlhttp.open("GET", "serv", true);
+         xmlhttp.send();
+     }
+ }*/
+/* setInterval(getMessages, 1000);*/
  //when click on button
     $("button").click(function () {
 
@@ -74,7 +104,10 @@
             .forEach(
                 ([key, value]) => {
                     if(value.checked) {
-                        places.push(value.value);
+                        places.push({
+                            place: value.value,
+                            state: 1
+                        });
 
                     }
                 }

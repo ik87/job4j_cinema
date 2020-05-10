@@ -6,7 +6,7 @@
          version="2.4">
   <display-name>Archetype Created Web Application</display-name>
 
-  <servlet>
+<!--  <servlet>
     <servlet-name>HallServlet</servlet-name>
     <servlet-class>controllers.HallServlet</servlet-class>
   </servlet>
@@ -14,7 +14,7 @@
   <servlet-mapping>
     <servlet-name>HallServlet</servlet-name>
     <url-pattern>/serv</url-pattern>
-  </servlet-mapping>
+  </servlet-mapping>-->
 
   <listener>
     <listener-class>listeners.SessionActivityListener</listener-class>

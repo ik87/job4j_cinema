@@ -22,3 +22,11 @@ Detect browser or tab closing
 
 Load Java HttpSession from JSESSIONID
 - https://stackoverflow.com/a/3092495/5984851
+
+GSON, json Serialization/Deserialization
+- https://habr.com/ru/post/253266/
+
+Long polling
+- https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/async-servlet/async-servlets.html
+- https://gist.github.com/ngugijames/c3eaf929f3512def986b
+- https://github.com/matheusgg/ocejwcd/blob/master/Cap8/AsyncProject/src/asyncListener/
