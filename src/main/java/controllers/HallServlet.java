@@ -9,7 +9,6 @@ import service.PlaceServiceImpl;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -27,42 +26,44 @@ import java.util.stream.Stream;
 public class HallServlet extends HttpServlet {
     private static final int POLLING_INTERVAL = 30;
     private static final int SESSION_INACTIVE_INTERVAL = 50;
+    private static final List<AsyncContext> CONTEXTS = new LinkedList<>();
 
     private final PlaceService placeService = PlaceServiceImpl.getInstance();
-    private final Set<Place> places = new ConcurrentSkipListSet<>(placeService.getPlaces());
-    private List<AsyncContext> contexts = new LinkedList<>();
+    private final Set<Place> places = new ConcurrentSkipListSet<>();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        HttpSession session = getSession(req);
-        System.out.println("I am here");
+       // HttpSession session = getSession(req);
         final AsyncContext asyncContext = req.startAsync(req, resp);
         asyncContext.setTimeout(POLLING_INTERVAL * 1000);
-        contexts.add(asyncContext);
-
+        CONTEXTS.add(asyncContext);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        List<AsyncContext> asyncContexts = new ArrayList<>(this.contexts);
-        this.contexts.clear();
-
         String placesJson = req.getParameter("places");
-        Type itemsSetType = new TypeToken<Set<Place>>() {
-        }.getType();
+        Type itemsSetType = new TypeToken<Set<Place>>() {}.getType();
         Set<Place> places = (new Gson()).fromJson(placesJson, itemsSetType);
+        places.forEach(x->x.setState(Place.RESERVED));
         HttpSession session = getSession(req);
         session.setAttribute("place", places);
 
         Set<Place> choosePlaces = SessionActivityListener.getChosePlaces();
 
         Set<Place> combinePlaces = Stream
-                .concat(places.stream(), choosePlaces.stream())
+                .concat(this.places.stream(), choosePlaces.stream())
                 .collect(Collectors.toSet());
 
         String json = new Gson().toJson(combinePlaces);
 
+        printAsyncContext(json);
+
+    }
+
+    public static void printAsyncContext(String json) {
+        List<AsyncContext> asyncContexts = new ArrayList<>(CONTEXTS);
+        CONTEXTS.clear();
         for (AsyncContext asyncContext : asyncContexts) {
             try {
                 HttpServletResponse response = (HttpServletResponse) asyncContext.getResponse();
@@ -86,7 +87,7 @@ public class HallServlet extends HttpServlet {
         HttpSession session = req.getSession();
 
         synchronized (session) {
-            session.setMaxInactiveInterval(SESSION_INACTIVE_INTERVAL);
+                session.setMaxInactiveInterval(SESSION_INACTIVE_INTERVAL);
         }
         return session;
     }
