@@ -4,7 +4,9 @@ import model.Place;
 import persistence.DbStore;
 import persistence.DbStoreImpl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class PlaceServiceImpl implements PlaceService {
     private final DbStore dbStore = DbStoreImpl.getInstance();
@@ -19,6 +21,8 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public Collection<Place> getPlaces() {
+    //    List<Place> places = new ArrayList<>(dbStore.getPlaces());
+  //      places.forEach(System.out::println);
         return dbStore.getPlaces();
     }
 

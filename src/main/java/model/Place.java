@@ -52,4 +52,13 @@ public class Place {
     public void setAccount(Account account) {
         this.account = account;
     }
+
+    @Override
+    public String toString() {
+        return "Place{" +
+                "place='" + place + '\'' +
+                ", state=" + state +
+                ", account=" + account +
+                '}';
+    }
 }

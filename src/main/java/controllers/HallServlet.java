@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,7 +28,13 @@ public class HallServlet extends HttpServlet {
     private static final List<AsyncContext> CONTEXTS = new LinkedList<>();
 
     private final PlaceService placeService = PlaceServiceImpl.getInstance();
-    private final Set<Place> places = new ConcurrentSkipListSet<>();
+    private Set<Place> places;
+
+    @Override
+    public void init() throws ServletException {
+        places = new LinkedHashSet<>(placeService.getPlaces());
+        places.forEach(System.out::println);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
