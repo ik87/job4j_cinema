@@ -39,21 +39,21 @@
             <tbody>
             <tr>
                 <th>1</th>
-                <td><input type="checkbox" name="place" value="11" disabled> Ряд 1, Место 1</td>
-                <td><input type="checkbox" name="place" value="12"> Ряд 1, Место 2</td>
-                <td><input type="checkbox" name="place" value="13"> Ряд 1, Место 3</td>
+                <td><input type="checkbox" name="place" value="1.1" disabled> Ряд 1, Место 1</td>
+                <td><input type="checkbox" name="place" value="1.2"> Ряд 1, Место 2</td>
+                <td><input type="checkbox" name="place" value="1.3"> Ряд 1, Место 3</td>
             </tr>
             <tr>
                 <th>2</th>
-                <td><input type="checkbox" name="place" value="21"> Ряд 2, Место 1</td>
-                <td><input type="checkbox" name="place" value="22"> Ряд 2, Место 2</td>
-                <td><input type="checkbox" name="place" value="23"> Ряд 2, Место 3</td>
+                <td><input type="checkbox" name="place" value="2.1"> Ряд 2, Место 1</td>
+                <td><input type="checkbox" name="place" value="2.2"> Ряд 2, Место 2</td>
+                <td><input type="checkbox" name="place" value="2.3"> Ряд 2, Место 3</td>
             </tr>
             <tr>
                 <th>3</th>
-                <td><input type="checkbox" name="place" value="31"> Ряд 3, Место 1</td>
-                <td><input type="checkbox" name="place" value="32"> Ряд 3, Место 2</td>
-                <td><input type="checkbox" name="place" value="33"> Ряд 3, Место 3</td>
+                <td><input type="checkbox" name="place" value="3.1"> Ряд 3, Место 1</td>
+                <td><input type="checkbox" name="place" value="3.2"> Ряд 3, Место 2</td>
+                <td><input type="checkbox" name="place" value="3.3"> Ряд 3, Место 3</td>
             </tr>
             </tbody>
         </table>
@@ -80,6 +80,15 @@
             url: "serv", success: function (data) {
                 //Update your dashboard gauge
                 console.log(data);
+/*                Object.entries($("tbody input"))
+                    .forEach(
+                        ([key, val]) => {
+                            for(var i = 0; i < data.length; i++) {
+                                if (val.value == data[i]) ;
+                            }
+                        }
+
+                    );*/
             }, dataType: "json", complete: poll, timeout: 30000
         });
     };
@@ -102,7 +111,9 @@
                 }
             );
         //console.log(places);
-        $.post("serv", {"places": JSON.stringify(places)});
+        $.post("serv", {"places": JSON.stringify(places)}, function (data) {
+            console.log(data);
+        });
 
     })
     //when push button

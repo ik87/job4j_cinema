@@ -7,9 +7,9 @@ public class Place {
     public static final int RESERVED = 2;
     public static final int TAKEN = 3;
 
-   private String place;
-   private int state;
-   private Account account;
+    private String place;
+    private int state;
+    private Account account;
 
     @Override
     public boolean equals(Object o) {
@@ -20,14 +20,13 @@ public class Place {
             return false;
         }
         Place place1 = (Place) o;
-        return place == place1.place;
+        return Objects.equals(place, place1.place);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(place);
     }
-
 
     public String getPlace() {
         return place;

@@ -40,18 +40,19 @@ public class DbStoreImpl implements DbStore {
     }
 
     @Override
-    public boolean setPlace(Place place) {
+    public boolean setPlace(Collection<Place> places) {
         boolean success = true;
         String sql = "UPDATE hall set state = ?, account_id = ? WHERE place = ?";
         try (Connection conn = POOL_CONNECTIONS.getConnection()) {
             conn.setAutoCommit(false);
-            try {
-                int account_id = addAccount(conn, place.getAccount());
-
-                PreparedStatement pstm = conn.prepareStatement(sql);
-                pstm.setString(3, place.getPlace());
-                pstm.setInt(1, place.getState());
-                pstm.setInt(2, account_id);
+            try(PreparedStatement pstm = conn.prepareStatement(sql)) {
+                for( Place place : places) {
+                    int account_id = addAccount(conn, place.getAccount());
+                    pstm.setString(3, place.getPlace());
+                    pstm.setInt(1, place.getState());
+                    pstm.setInt(2, account_id);
+                    pstm.addBatch();
+                }
                 pstm.executeUpdate();
 
                 conn.commit();

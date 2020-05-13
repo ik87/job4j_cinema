@@ -13,10 +13,10 @@ import java.util.Collection;
 public interface DbStore {
     /**
      * Set new state for place (join account)
-     * @param place place
-     * @return id place
+     * @param places collection places
+     * @return true if success
      */
-    boolean setPlace(Place place);
+    boolean setPlace(Collection<Place> places);
 
 /*    *//**
      * Add new account;
