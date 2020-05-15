@@ -63,6 +63,9 @@
     </div>
 </div>
 <script>
+    const FREE = 1;
+    const RESERVED = 2;
+    const TAKEN = 3;
     //when toggled then send to server value;
     $("input").change(function () {
         // console.log($(this)[0].value);
@@ -72,27 +75,38 @@
 
     //long polling
 
-    poll();
+    //poll();
 
+    $(function () {
+        $.get("serv",{action: "new"}, function (data) {
+            update(data);
+        }).then(poll);
+
+    })
 
     function poll() {
         $.ajax({
-            url: "serv", success: function (data) {
+            url: "serv", data: {action: "poll"}, success: function (data) {
                 //Update your dashboard gauge
-                console.log(data);
-/*                Object.entries($("tbody input"))
-                    .forEach(
-                        ([key, val]) => {
-                            for(var i = 0; i < data.length; i++) {
-                                if (val.value == data[i]) ;
-                            }
-                        }
-
-                    );*/
+                //console.log(data);
+                update(data);
             }, dataType: "json", complete: poll, timeout: 30000
         });
     };
 
+
+    function update(data) {
+        for (let i = 0; i < data.length; i++) {
+            //if (val.value == data[i]) ;
+            let input = $('input[value="' + data[i].place +'"]');
+
+            if(data[i].state === FREE) {
+                input.prop('disabled', false);
+            } else if(data[i].state === RESERVED) {
+                input.prop('disabled', true);
+            }
+        }
+    }
     //when click on button
     $("button").click(function () {
 
@@ -101,7 +115,7 @@
         Object.entries($("input"))
             .forEach(
                 ([key, value]) => {
-                    if (value.checked) {
+                    if (value.checked && value.disabled == false) {
                         places.push({
                             place: value.value,
                             state: 2

@@ -22,7 +22,6 @@ public class DbStoreImpl implements DbStore {
         try {
             URI dbUri = new URI(System.getenv("DB_JOB4j_CINEMA"));
             String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + dbUri.getPath();
-
             if (dbUri.getUserInfo() != null) {
                 POOL_CONNECTIONS.setUsername(dbUri.getUserInfo().split(":")[0]);
                 POOL_CONNECTIONS.setPassword(dbUri.getUserInfo().split(":")[1]);
@@ -45,8 +44,8 @@ public class DbStoreImpl implements DbStore {
         String sql = "UPDATE hall set state = ?, account_id = ? WHERE place = ?";
         try (Connection conn = POOL_CONNECTIONS.getConnection()) {
             conn.setAutoCommit(false);
-            try(PreparedStatement pstm = conn.prepareStatement(sql)) {
-                for( Place place : places) {
+            try (PreparedStatement pstm = conn.prepareStatement(sql)) {
+                for (Place place : places) {
                     int account_id = addAccount(conn, place.getAccount());
                     pstm.setString(3, place.getPlace());
                     pstm.setInt(1, place.getState());

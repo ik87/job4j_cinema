@@ -20,7 +20,7 @@ public class AsyncOperation {
         cacheDB = new LinkedHashSet<>(placeService.getPlaces());
     }
 
-    private static AsyncOperation INSTANCE = new AsyncOperation();
+    private static final AsyncOperation INSTANCE = new AsyncOperation();
 
     public static AsyncOperation getInstance() {
         return INSTANCE;
@@ -60,10 +60,15 @@ public class AsyncOperation {
         boolean result = !this.places
                 .values()
                 .stream()
-                .flatMap(x -> x.stream())
+                .flatMap(Set::stream)
                 .anyMatch(x -> places.contains(x));
         if (result) {
-            this.places.put(id, places);
+            var val = this.places.get(id);
+            if (val != null) {
+                val.addAll(places);
+            } else {
+                this.places.put(id, places);
+            }
         }
         return result;
     }
@@ -72,14 +77,13 @@ public class AsyncOperation {
         Set<Place> sessionPlaces =
                 places.entrySet()
                         .stream()
-                        // .filter(x-> !Objects.equals(id, x.getKey()))
                         .flatMap(x -> x.getValue().stream())
                         .collect(Collectors.toSet());
         sessionPlaces.addAll(cacheDB);
         return sessionPlaces;
     }
 
-    private String getJsonPlaces() {
+    public String getJsonPlaces() {
         return new Gson().toJson(combinerPlaces());
     }
 }

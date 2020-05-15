@@ -24,6 +24,6 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Override
     public boolean setPlace(Collection<Place> places) {
-        return  dbStore.setPlace(places);
+        return dbStore.setPlace(places);
     }
 }

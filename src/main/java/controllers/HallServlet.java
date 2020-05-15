@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 
 @WebServlet(urlPatterns = {"/serv"}, asyncSupported = true)
@@ -25,12 +26,18 @@ public class HallServlet extends HttpServlet {
 
 
     private final AsyncOperation asyncOperation = AsyncOperation.getInstance();
+    private Map<String, BiConsumer<HttpServletRequest, HttpServletResponse>> road = new HashMap<>();
+
+    @Override
+    public void init() throws ServletException {
+        road.put("poll", this::poll);
+        road.put("new", this::newPage);
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        final AsyncContext asyncContext = req.startAsync(req, resp);
-        asyncContext.setTimeout(POLLING_INTERVAL * 1000);
-        asyncOperation.addContext(asyncContext);
+        String action = req.getParameter("action");
+        road.get(action).accept(req, resp);
     }
 
     @Override
@@ -60,6 +67,24 @@ public class HallServlet extends HttpServlet {
         printWriter.flush();
     }
 
+    void poll(HttpServletRequest req, HttpServletResponse resp) {
+        final AsyncContext asyncContext = req.startAsync(req, resp);
+        asyncContext.setTimeout(POLLING_INTERVAL * 1000);
+        asyncOperation.addContext(asyncContext);
+    }
+
+    void newPage(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        try (PrintWriter printWriter = resp.getWriter()) {
+            String json = asyncOperation.getJsonPlaces();
+            printWriter.write(json);
+            printWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private HttpSession getSession(HttpServletRequest req) {
         HttpSession session = req.getSession();
