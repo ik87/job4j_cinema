@@ -1,6 +1,7 @@
 package service;
 
 import com.google.gson.Gson;
+import model.Account;
 import model.Place;
 
 import javax.servlet.AsyncContext;
@@ -43,7 +44,7 @@ public class AsyncOperation {
                 }
                 asyncContext.complete();
             } catch (Exception ex) {
-
+                ex.printStackTrace();
             }
         }
     }
@@ -57,11 +58,14 @@ public class AsyncOperation {
     }
 
     public boolean addPlaces(String id, Set<Place> places) {
-        boolean result = !this.places
+        //checking chosen places in other sessions
+        boolean result = !places.isEmpty() ? !this.places
                 .values()
                 .stream()
                 .flatMap(Set::stream)
-                .anyMatch(x -> places.contains(x));
+                .anyMatch(places::contains) : false;
+
+        //if places haven't been chosen earlier then map them with session
         if (result) {
             var val = this.places.get(id);
             if (val != null) {
@@ -73,17 +77,39 @@ public class AsyncOperation {
         return result;
     }
 
-    private Set<Place> combinerPlaces() {
-        Set<Place> sessionPlaces =
-                places.entrySet()
-                        .stream()
-                        .flatMap(x -> x.getValue().stream())
+    public void bindAccountAndPlaces(Set<Place> places, Account account) {
+        places.forEach(x -> {
+                    x.setState(Place.RESERVED);
+                    x.setAccount(account);
+                }
+        );
+    }
+
+    public boolean savePlaces(Set<Place> places) {
+        boolean result = false;
+        if(placeService.setPlace(places)) {
+           result = cacheDB.addAll(placeService.getPlaces());
+        }
+        return result;
+    }
+
+    private Set<Place> chosePlaces() {
+        return places.values().stream()
+                        .flatMap(Set::stream)
                         .collect(Collectors.toSet());
-        sessionPlaces.addAll(cacheDB);
-        return sessionPlaces;
+
     }
 
     public String getJsonPlaces() {
-        return new Gson().toJson(combinerPlaces());
+        Map<String, Set<Place>> map = new HashMap<>();
+        map.put("reserved", chosePlaces());
+        map.put("db_places", cacheDB);
+        return new Gson().toJson(map);
+    }
+
+    public Set<Place> getPlaces(String id) {
+        Set<Place> preparePlaces = new HashSet<>(cacheDB);
+        preparePlaces.retainAll(places.get(id));
+        return preparePlaces;
     }
 }

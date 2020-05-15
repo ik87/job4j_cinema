@@ -74,7 +74,7 @@ public class DbStoreImpl implements DbStore {
     @Override
     public Collection<Place> getPlaces() {
         Collection<Place> places = new ArrayList<>();
-        String sql = "SELECT place, status FROM Hall";
+        String sql = "SELECT place, status, price FROM Hall";
         try (Connection conn = POOL_CONNECTIONS.getConnection()) {
             PreparedStatement pstm = conn.prepareStatement(sql);
             ResultSet rs = pstm.executeQuery();
@@ -82,6 +82,7 @@ public class DbStoreImpl implements DbStore {
                 Place place = new Place();
                 place.setPlace(rs.getString(1));
                 place.setState(rs.getInt(2));
+                place.setPrice(rs.getFloat(3));
                 places.add(place);
             }
 

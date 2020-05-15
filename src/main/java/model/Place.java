@@ -5,11 +5,12 @@ import java.util.Objects;
 public class Place {
     public static final int FREE = 1;
     public static final int RESERVED = 2;
-    public static final int TAKEN = 3;
 
     private String place;
     private int state;
+    private float price;
     private Account account;
+
 
     @Override
     public boolean equals(Object o) {
@@ -52,6 +53,13 @@ public class Place {
         this.account = account;
     }
 
+    public float getPrice() {
+        return price;
+    }
+
+    public void setPrice(float price) {
+        this.price = price;
+    }
 /*    @Override
     public String toString() {
         return "Place{" +

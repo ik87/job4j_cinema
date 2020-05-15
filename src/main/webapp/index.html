@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
           integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-    <title>Hello, world!</title>
+    <title>Выбор места</title>
 </head>
 <body>
 <!-- Optional JavaScript -->
@@ -65,7 +65,7 @@
 <script>
     const FREE = 1;
     const RESERVED = 2;
-    const TAKEN = 3;
+    var safe = true;  //after close or refresh page reserved places will remove
     //when toggled then send to server value;
     $("input").change(function () {
         // console.log($(this)[0].value);
@@ -78,35 +78,59 @@
     //poll();
 
     $(function () {
-        $.get("serv",{action: "new"}, function (data) {
-            update(data);
+        $.get("serv", {action: "new"}, function (data) {
+            console.log(data);
+            update(data.db_places);
+            update(data.reserved);
         }).then(poll);
 
-    })
+        /*        $(window).bind("beforeunload", function() {
+                    if(safe) {
+                        return 'Are you sure you want to leave?';
+                    }
+
+                });
+
+                if (performance.navigation.type == 1) {
+                    close(safe);
+                }
+
+                $(window).bind('unload', function(){
+                    close(safe);
+                });*/
+    });
 
     function poll() {
         $.ajax({
             url: "serv", data: {action: "poll"}, success: function (data) {
                 //Update your dashboard gauge
                 //console.log(data);
-                update(data);
+                update(data.db_places);
+                update(data.reserved);
             }, dataType: "json", complete: poll, timeout: 30000
         });
     };
 
+    function close(safe) {
+        if (safe) {
+            $.post("serv", {action: "close"});
+        }
+
+    }
 
     function update(data) {
         for (let i = 0; i < data.length; i++) {
             //if (val.value == data[i]) ;
-            let input = $('input[value="' + data[i].place +'"]');
+            let input = $('input[value="' + data[i].place + '"]');
 
-            if(data[i].state === FREE) {
+            if (data[i].state === FREE) {
                 input.prop('disabled', false);
-            } else if(data[i].state === RESERVED) {
+            } else if (data[i].state === RESERVED) {
                 input.prop('disabled', true);
             }
         }
     }
+
     //when click on button
     $("button").click(function () {
 
@@ -125,9 +149,12 @@
                 }
             );
         //console.log(places);
-        $.post("serv", {"places": JSON.stringify(places)}, function (data) {
-            console.log(data);
-        });
+        $.post("serv", {action: "chose", places: JSON.stringify(places)})
+            .done(function (data) {
+                window.location.href = "payment.html"
+                }
+            );
+
 
     })
     //when push button

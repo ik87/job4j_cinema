@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+          integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <title>Оплатить билеты</title>
+</head>
+<body>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+<div class="container">
+    <div class="row pt-3">
+        <h3>
+            оооо
+        </h3>
+    </div>
+    <div class="row mt-3">
+        <form>
+            <div class="form-group">
+                <label for="username">ФИО</label>
+                <input type="text" class="form-control" id="username" placeholder="ФИО">
+            </div>
+            <div class="form-group">
+                <label for="phone">Номер телефона</label>
+                <input type="text" class="form-control" id="phone" placeholder="Номер телефона">
+            </div>
+            <button type="button" class="btn btn-success">Оплатить</button>
+        </form>
+    </div>
+</div>
+<script>
+
+    $(function () {
+       //get ajax data for current session
+            $.get("serv", {action: 'payment'})
+                .done(function (data) {
+                // console.log(data);
+                cost(data);
+            });
+
+        });
+
+    $("button").click(function () {
+
+        let account = {};
+
+        account.name = $("#username").val();
+        account.phone = $("#phone").val();
+
+
+
+        $.post("serv", {action: 'buy', account: JSON.stringify(account) })
+            .done(function () {
+                 console.log(data);
+                //cost(data);
+            });
+    });
+
+    function cost(data) {
+        let head = "Вы выбрали:<br>";
+        let places = "";
+        let sum = 0.0;
+        for(i = 0; i < data.length; i++) {
+           let result =  data[i].place.match(/(.+)\.(.+)/);
+           places +=
+           "ряд " + result[1] + " место " + result[2]
+           + " цена: " + data[i].price + " рублей <br>";
+           sum += data[i].price;
+        }
+
+        $("h3").html(head + places + "<hr> Сумма " + sum + " рублей");
+    }
+
+</script>
+</body>
+</html>
