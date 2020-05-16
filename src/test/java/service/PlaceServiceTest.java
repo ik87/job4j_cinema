@@ -1,6 +1,6 @@
 package service;
 
-import model.Place;
+import model.PlaceDTO;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ public class PlaceServiceTest {
     @Test
     public void whenGetAllPlacesTheGet() {
         PlaceService placeService = PlaceServiceImpl.getInstance();
-        List<Place> places = new ArrayList<>();
+        List<PlaceDTO> places = new ArrayList<>();
         places.addAll(placeService.getPlaces());
         assertThat(places.size(), is(9));
     }

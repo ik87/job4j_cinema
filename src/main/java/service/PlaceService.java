@@ -1,11 +1,14 @@
 package service;
 
-import model.Place;
+import model.Account;
+import model.PlaceDTO;
 
 import java.util.Collection;
 
 public interface PlaceService {
-    Collection<Place> getPlaces();
+    Collection<PlaceDTO> getPlaces();
 
-    boolean setPlace(Collection<Place> places);
+    boolean setPlace(Collection<PlaceDTO> places, Account account);
+
+    void clear();
 }

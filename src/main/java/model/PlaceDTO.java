@@ -2,13 +2,13 @@ package model;
 
 import java.util.Objects;
 
-public class Place {
+public class PlaceDTO {
+    public static final int FREE = 1;
+    public static final int RESERVED = 2;
 
     private String place;
     private int state;
     private float price;
-    private Account account;
-
 
     @Override
     public boolean equals(Object o) {
@@ -18,8 +18,8 @@ public class Place {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Place place1 = (Place) o;
-        return Objects.equals(place, place1.place);
+        PlaceDTO placeDTO = (PlaceDTO) o;
+        return Objects.equals(place, placeDTO.place);
     }
 
     @Override
@@ -43,14 +43,6 @@ public class Place {
         this.state = state;
     }
 
-    public Account getAccount() {
-        return account;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-    }
-
     public float getPrice() {
         return price;
     }
@@ -58,12 +50,4 @@ public class Place {
     public void setPrice(float price) {
         this.price = price;
     }
-/*    @Override
-    public String toString() {
-        return "Place{" +
-                "place='" + place + '\'' +
-                ", state=" + state +
-                ", account=" + account +
-                '}';
-    }*/
 }

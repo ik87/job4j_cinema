@@ -2,7 +2,7 @@ package service;
 
 import com.google.gson.Gson;
 import model.Account;
-import model.Place;
+import model.PlaceDTO;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletResponse;
@@ -13,9 +13,9 @@ import java.util.stream.Collectors;
 
 public class AsyncOperation {
     private final List<AsyncContext> context = new LinkedList<>();
-    private final Map<String, Set<Place>> places = new ConcurrentHashMap<>();
+    private final Map<String, Set<PlaceDTO>> places = new ConcurrentHashMap<>();
     private final PlaceService placeService = PlaceServiceImpl.getInstance();
-    private final Set<Place> cacheDB;
+    private final Set<PlaceDTO> cacheDB;
 
     private AsyncOperation() {
         cacheDB = new LinkedHashSet<>(placeService.getPlaces());
@@ -57,16 +57,14 @@ public class AsyncOperation {
         places.remove(id);
     }
 
-    public boolean addPlaces(String id, Set<Place> places) {
-        //checking chosen places in other sessions
-        boolean result = !places.isEmpty() ? !this.places
-                .values()
-                .stream()
-                .flatMap(Set::stream)
-                .anyMatch(places::contains) : false;
+    public boolean addPlaces(String id, Set<PlaceDTO> places) {
+
+        boolean notIntersect = checkIntersectPlaces(places);
 
         //if places haven't been chosen earlier then map them with session
-        if (result) {
+        if (notIntersect) {
+            places = preparePlaces(places);
+            places.forEach(x -> x.setState(PlaceDTO.RESERVED));
             var val = this.places.get(id);
             if (val != null) {
                 val.addAll(places);
@@ -74,42 +72,77 @@ public class AsyncOperation {
                 this.places.put(id, places);
             }
         }
-        return result;
+        return notIntersect;
     }
 
-    public void bindAccountAndPlaces(Set<Place> places, Account account) {
-        places.forEach(x -> {
-                    x.setState(Place.RESERVED);
-                    x.setAccount(account);
-                }
-        );
-    }
-
-    public boolean savePlaces(Set<Place> places) {
+    public boolean savePlaces(Set<PlaceDTO> places, Account account) {
         boolean result = false;
-        if(placeService.setPlace(places)) {
-           result = cacheDB.addAll(placeService.getPlaces());
+        if (placeService.setPlace(places, account)) {
+            //update cache places
+            cacheDB.clear();
+            cacheDB.addAll(placeService.getPlaces());
+            result = true;
         }
         return result;
     }
 
-    private Set<Place> chosePlaces() {
+    private Set<PlaceDTO> getChosePlaces() {
         return places.values().stream()
-                        .flatMap(Set::stream)
-                        .collect(Collectors.toSet());
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet());
 
     }
 
     public String getJsonPlaces() {
-        Map<String, Set<Place>> map = new HashMap<>();
-        map.put("reserved", chosePlaces());
+        Map<String, Set<PlaceDTO>> map = new HashMap<>();
+        map.put("reserved", getChosePlaces());
         map.put("db_places", cacheDB);
         return new Gson().toJson(map);
     }
 
-    public Set<Place> getPlaces(String id) {
-        Set<Place> preparePlaces = new HashSet<>(cacheDB);
-        preparePlaces.retainAll(places.get(id));
-        return preparePlaces;
+    public Set<PlaceDTO> getPlaces(String id) {
+        //Set<PlaceDTO> preparePlaces = new HashSet<>(cacheDB);
+        //preparePlaces.retainAll(places.get(id));
+        // return preparePlaces;
+        return places.get(id);
+    }
+
+    /**
+     * Checking chosen places in other sessions
+     *
+     * @param places put places
+     * @return true if put places not intersect with exist places
+     */
+    boolean checkIntersectPlaces(Set<PlaceDTO> places) {
+
+        return !places.isEmpty() ? !this.places
+                .values()
+                .stream()
+                .flatMap(Set::stream)
+                .anyMatch(places::contains) : false;
+    }
+
+    Set<PlaceDTO> preparePlaces(Set<PlaceDTO> places) {
+
+        return cacheDB
+                .stream()
+                .filter(places::contains)
+                .map(x -> {
+                    PlaceDTO placeDTO = new PlaceDTO();
+                    placeDTO.setState(x.getState());
+                    placeDTO.setPlace(x.getPlace());
+                    placeDTO.setPrice(x.getPrice());
+                    return placeDTO;
+                })
+                .collect(Collectors.toSet());
+    }
+
+
+
+    public void clear() {
+        placeService.clear();
+        cacheDB.clear();
+        places.clear();
+        cacheDB.addAll(placeService.getPlaces());
     }
 }

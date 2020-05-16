@@ -5,10 +5,7 @@ import model.Place;
 import org.apache.commons.dbcp2.BasicDataSource;
 
 import java.net.URI;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -44,21 +41,23 @@ public class DbStoreImpl implements DbStore {
         String sql = "UPDATE hall set state = ?, account_id = ? WHERE place = ?";
         try (Connection conn = POOL_CONNECTIONS.getConnection()) {
             conn.setAutoCommit(false);
+            Account account = places.stream().findFirst().get().getAccount();
+            Integer account_id = addAccount(conn, account);
             try (PreparedStatement pstm = conn.prepareStatement(sql)) {
                 for (Place place : places) {
-                    int account_id = addAccount(conn, place.getAccount());
-                    pstm.setString(3, place.getPlace());
                     pstm.setInt(1, place.getState());
                     pstm.setInt(2, account_id);
-                    pstm.addBatch();
+                    pstm.setString(3, place.getPlace());
+                    pstm.executeUpdate();
                 }
-                pstm.executeUpdate();
+
 
                 conn.commit();
 
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 success = false;
                 conn.rollback();
+                e.printStackTrace();
             } finally {
                 conn.setAutoCommit(true);
             }
@@ -74,7 +73,7 @@ public class DbStoreImpl implements DbStore {
     @Override
     public Collection<Place> getPlaces() {
         Collection<Place> places = new ArrayList<>();
-        String sql = "SELECT place, status, price FROM Hall";
+        String sql = "SELECT place, state, price FROM Hall";
         try (Connection conn = POOL_CONNECTIONS.getConnection()) {
             PreparedStatement pstm = conn.prepareStatement(sql);
             ResultSet rs = pstm.executeQuery();
@@ -98,16 +97,67 @@ public class DbStoreImpl implements DbStore {
     private Integer addAccount(Connection conn, Account account) throws SQLException {
         String sql = "INSERT INTO Account (Name, Phone) VALUES (?, ?)";
 
-        PreparedStatement pstm = conn.prepareStatement(sql);
+        PreparedStatement pstm = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         pstm.setString(1, account.getName());
         pstm.setString(2, account.getPhone());
 
         pstm.executeUpdate();
-
-        ResultSet generatedKeys = pstm.getGeneratedKeys();
-        generatedKeys.next();
-        account.setAccountId(generatedKeys.getInt(1));
+        try (ResultSet generatedKeys = pstm.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                account.setAccountId(generatedKeys.getInt(1));
+            }
+        }
 
         return account.getAccountId();
     }
+
+    @Override
+    public void clear() {
+        String sql = createNewTableSql();
+        try (Connection connection = POOL_CONNECTIONS.getConnection()) {
+            connection.setAutoCommit(false);
+            try (Statement st = POOL_CONNECTIONS.getConnection().createStatement()) {
+                st.executeUpdate(sql);
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                connection.setAutoCommit(true);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    String createNewTableSql() {
+        return "DROP TABLE hall;"
+                + "DROP TABLE Account;"
+
+                + "CREATE TABLE Account ("
+                + "        Account_id SERIAL PRIMARY KEY,"
+                + "        Name varchar(100) NOT NULL,"
+                + "        Phone varchar(100) NOT NULL"
+                + ");"
+
+                + "CREATE TABLE Hall ("
+                + "       Place varchar(10) NOT NULL  PRIMARY KEY,"
+                + "       State int,"
+                + "       Price float,"
+                + "       Account_id INT REFERENCES Account(Account_id)"
+                + ");"
+
+                + "INSERT INTO Hall(Place, State, Price, Account_id)"
+                + "VALUES"
+                + "       ('1.1', 1, 500, null ),"
+                + "       ('1.2', 1, 500, null ),"
+                + "       ('1.3', 1, 500, null ),"
+                + "       ('2.1', 1, 500, null ),"
+                + "       ('2.2', 1, 500, null ),"
+                + "       ('2.3', 1, 500, null ),"
+                + "       ('3.1', 1, 500, null ),"
+                + "       ('3.2', 1, 500, null ),"
+                + "       ('3.3', 1, 500, null );";
+    }
+
 }

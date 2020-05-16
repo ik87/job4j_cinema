@@ -33,4 +33,5 @@ public interface DbStore {
      */
     Collection<Place> getPlaces();
 
+    void clear();
 }

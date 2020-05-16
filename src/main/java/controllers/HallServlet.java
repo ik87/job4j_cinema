@@ -3,9 +3,8 @@ package controllers;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import model.Account;
-import model.Place;
+import model.PlaceDTO;
 import service.AsyncOperation;
-import service.PlaceService;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
@@ -38,6 +37,7 @@ public class HallServlet extends HttpServlet {
         road.put("chose", this::chosePlaces);
         road.put("payment", this::payment);
         road.put("buy", this::buy);
+        road.put("clear", this::clear);
     }
 
 
@@ -52,6 +52,10 @@ public class HallServlet extends HttpServlet {
         String action = req.getParameter("action");
         road.get(action).accept(req, resp);
     }
+    void clear(HttpServletRequest req, HttpServletResponse resp) {
+        asyncOperation.clear();
+        asyncOperation.printAsyncContext();
+    }
 
     void poll(HttpServletRequest req, HttpServletResponse resp) {
         final AsyncContext asyncContext = req.startAsync(req, resp);
@@ -60,6 +64,10 @@ public class HallServlet extends HttpServlet {
     }
 
     void newPage(HttpServletRequest req, HttpServletResponse resp) {
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
         resp.setStatus(HttpServletResponse.SC_OK);
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
@@ -87,8 +95,8 @@ public class HallServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         if (session != null) {
             synchronized (session) {
-                Set<Place> places = asyncOperation.getPlaces(session.getId());
-                for(Place place : places) {
+                Set<PlaceDTO> places = asyncOperation.getPlaces(session.getId());
+                for (PlaceDTO place : places) {
                     System.out.println(place.getPrice());
                 }
                 String json = new Gson().toJson(places);
@@ -103,54 +111,50 @@ public class HallServlet extends HttpServlet {
                 }
             }
         } else {
-            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
     void chosePlaces(HttpServletRequest req, HttpServletResponse resp) {
         String placesJson = req.getParameter("places");
-        Type itemsSetType = new TypeToken<Set<Place>>() {
+        Type itemsSetType = new TypeToken<Set<PlaceDTO>>() {
         }.getType();
-        Set<Place> places = (new Gson()).fromJson(placesJson, itemsSetType);
-
-        places.forEach(x -> x.setState(Place.RESERVED));
+        Set<PlaceDTO> places = (new Gson()).fromJson(placesJson, itemsSetType);
         HttpSession session = getSession(req);
-
         boolean result = asyncOperation.addPlaces(session.getId(), places);
         asyncOperation.printAsyncContext();
 
         if (result) {
             resp.setStatus(HttpServletResponse.SC_OK);
         } else {
+            asyncOperation.removePlaces(session.getId());
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
-    private void buy(HttpServletRequest req, HttpServletResponse resp) {
-       HttpSession session = req.getSession(false);
-       if(session != null) {
-           synchronized (session) {
-               String accountJson = req.getParameter("account");
-/*        Type accountType = new TypeToken<Account>() {
-        }.getType();*/
-               Account account = (new Gson()).fromJson(accountJson, Account.class);
-               String name = account.getName();
-               String phone = account.getPhone();
+    void buy(HttpServletRequest req, HttpServletResponse resp) {
+        HttpSession session = req.getSession(false);
+        if (session != null) {
+            synchronized (session) {
+                String accountJson = req.getParameter("account");
+                Account account = (new Gson()).fromJson(accountJson, Account.class);
+                String name = account.getName();
+                String phone = account.getPhone();
 
-               if (name.length() < 3 && phone.length() < 11) {
-                   resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-               } else {
-                  Set<Place> places = asyncOperation.getPlaces(session.getId());
-                  asyncOperation.bindAccountAndPlaces(places, account);
-                  if(asyncOperation.savePlaces(places)) {
-                      asyncOperation.printAsyncContext();
-                      resp.setStatus(HttpServletResponse.SC_OK);
-                  } else {
-                      resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                  }
-               }
-           }
-       }
+                if (name.length() < 3 && phone.length() < 11) {
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                } else {
+                    Set<PlaceDTO> places = asyncOperation.getPlaces(session.getId());
+                    if (asyncOperation.savePlaces(places, account)) {
+                        resp.setStatus(HttpServletResponse.SC_OK);
+                    } else {
+                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                }
+                session.invalidate();
+                asyncOperation.printAsyncContext();
+            }
+        }
     }
 
 
@@ -161,8 +165,6 @@ public class HallServlet extends HttpServlet {
         }
         return session;
     }
-
-
 
 
 }

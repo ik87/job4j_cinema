@@ -59,7 +59,8 @@
         </table>
     </div>
     <div class="row float-right">
-        <button type="button" class="btn btn-success">Оплатить</button>
+        <button id="clear" type="button" class="btn btn-warning">Сбросить всё</button>
+        <button id="buy" type="button" class="btn btn-success">Оплатить</button>
     </div>
 </div>
 <script>
@@ -104,7 +105,7 @@
         $.ajax({
             url: "serv", data: {action: "poll"}, success: function (data) {
                 //Update your dashboard gauge
-                //console.log(data);
+                console.log(data);
                 update(data.db_places);
                 update(data.reserved);
             }, dataType: "json", complete: poll, timeout: 30000
@@ -132,7 +133,7 @@
     }
 
     //when click on button
-    $("button").click(function () {
+    $("#buy").click(function () {
 
         var places = [];
 
@@ -150,14 +151,26 @@
             );
         //console.log(places);
         $.post("serv", {action: "chose", places: JSON.stringify(places)})
-            .done(function (data) {
+            .done(function () {
                 window.location.href = "payment.html"
                 }
             );
 
 
     })
-    //when push button
+
+    $("#clear").click(function () {
+
+
+        //console.log(places);
+        $.post("serv", {action: "clear"})
+            .done(function () {
+                    window.location.reload();
+                }
+            );
+
+
+    })
 </script>
 
 </body>
