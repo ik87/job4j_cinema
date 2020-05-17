@@ -1,12 +1,13 @@
 package listeners;
 
-import service.AsyncOperation;
+import service.*;
 
 import javax.servlet.http.*;
 
 public class SessionActivityListener implements HttpSessionListener {
 
-    private final AsyncOperation asyncOperation = AsyncOperation.getInstance();
+    private final PollService pollService = PollServiceAsyncImpl.getInstance();
+    private final PlaceService placeService = PlaceServiceImpl.getInstance();
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
@@ -15,7 +16,8 @@ public class SessionActivityListener implements HttpSessionListener {
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        asyncOperation.removePlaces(se.getSession().getId());
-        asyncOperation.printAsyncContext();
+        placeService.removePlacesFromCache(se.getSession().getId());
+        String json = placeService.getJsonAllPlaces();
+        pollService.printContext(json);
     }
 }

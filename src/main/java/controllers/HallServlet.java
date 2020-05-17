@@ -4,9 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import model.Account;
 import model.PlaceDTO;
-import service.AsyncOperation;
+import service.*;
 
-import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -19,15 +18,23 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.BiConsumer;
 
-
+/**
+ * @author Kosoloapov Ilya (d_dexter@mial.ru)
+ *
+ * @version 1.0
+ */
 @WebServlet(urlPatterns = {"/serv"}, asyncSupported = true)
 public class HallServlet extends HttpServlet {
-    private static final int POLLING_INTERVAL = 30;
-    private static final int SESSION_INACTIVE_INTERVAL = 50;
+    /**
+     * After 50 second inactive session will be remove,
+     * and early reserved session place's will be also remove,
+     * see SessionActivityListener
+     */
+    private static final int SESSION_LIVES = 50;
 
-
-    private final AsyncOperation asyncOperation = AsyncOperation.getInstance();
-    private Map<String, BiConsumer<HttpServletRequest, HttpServletResponse>> road = new HashMap<>();
+    private final PlaceService placeService = PlaceServiceImpl.getInstance();
+    private final PollService pollService = PollServiceAsyncImpl.getInstance();
+    private final Map<String, BiConsumer<HttpServletRequest, HttpServletResponse>> road = new HashMap<>();
 
     @Override
     public void init() throws ServletException {
@@ -52,15 +59,15 @@ public class HallServlet extends HttpServlet {
         String action = req.getParameter("action");
         road.get(action).accept(req, resp);
     }
+
     void clear(HttpServletRequest req, HttpServletResponse resp) {
-        asyncOperation.clear();
-        asyncOperation.printAsyncContext();
+        placeService.clear();
+        String json = placeService.getJsonAllPlaces();
+        pollService.printContext(json);
     }
 
     void poll(HttpServletRequest req, HttpServletResponse resp) {
-        final AsyncContext asyncContext = req.startAsync(req, resp);
-        asyncContext.setTimeout(POLLING_INTERVAL * 1000);
-        asyncOperation.addContext(asyncContext);
+        pollService.addContext(req, resp);
     }
 
     void newPage(HttpServletRequest req, HttpServletResponse resp) {
@@ -72,7 +79,7 @@ public class HallServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         try (PrintWriter printWriter = resp.getWriter()) {
-            String json = asyncOperation.getJsonPlaces();
+            String json = placeService.getJsonAllPlaces();
             printWriter.write(json);
             printWriter.flush();
         } catch (IOException e) {
@@ -84,9 +91,30 @@ public class HallServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         if (session != null) {
             synchronized (session) {
-                asyncOperation.removePlaces(session.getId());
                 session.invalidate();
-                asyncOperation.printAsyncContext();
+                String json = placeService.getJsonAllPlaces();
+                pollService.printContext(json);
+            }
+        }
+    }
+
+
+    void chosePlaces(HttpServletRequest req, HttpServletResponse resp) {
+        String placesJson = req.getParameter("places");
+        Type itemsSetType = new TypeToken<Set<PlaceDTO>>() {
+        }.getType();
+        Set<PlaceDTO> places = (new Gson()).fromJson(placesJson, itemsSetType);
+        HttpSession session = getSession(req);
+        synchronized (session) {
+            boolean result = placeService.addPlacesToCache(places, session.getId());
+            String json = placeService.getJsonAllPlaces();
+            pollService.printContext(json);
+
+            if (result) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+            } else {
+                session.invalidate();
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
         }
     }
@@ -95,11 +123,7 @@ public class HallServlet extends HttpServlet {
         HttpSession session = req.getSession(false);
         if (session != null) {
             synchronized (session) {
-                Set<PlaceDTO> places = asyncOperation.getPlaces(session.getId());
-                for (PlaceDTO place : places) {
-                    System.out.println(place.getPrice());
-                }
-                String json = new Gson().toJson(places);
+                String json = placeService.getJsonReservedPlaces(session.getId());
                 resp.setStatus(HttpServletResponse.SC_OK);
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
@@ -111,23 +135,6 @@ public class HallServlet extends HttpServlet {
                 }
             }
         } else {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
-    }
-
-    void chosePlaces(HttpServletRequest req, HttpServletResponse resp) {
-        String placesJson = req.getParameter("places");
-        Type itemsSetType = new TypeToken<Set<PlaceDTO>>() {
-        }.getType();
-        Set<PlaceDTO> places = (new Gson()).fromJson(placesJson, itemsSetType);
-        HttpSession session = getSession(req);
-        boolean result = asyncOperation.addPlaces(session.getId(), places);
-        asyncOperation.printAsyncContext();
-
-        if (result) {
-            resp.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            asyncOperation.removePlaces(session.getId());
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
@@ -144,15 +151,15 @@ public class HallServlet extends HttpServlet {
                 if (name.length() < 3 && phone.length() < 11) {
                     resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 } else {
-                    Set<PlaceDTO> places = asyncOperation.getPlaces(session.getId());
-                    if (asyncOperation.savePlaces(places, account)) {
+                    if (placeService.savePlacesToDb(account, session.getId())) {
                         resp.setStatus(HttpServletResponse.SC_OK);
                     } else {
                         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     }
                 }
                 session.invalidate();
-                asyncOperation.printAsyncContext();
+                String json = placeService.getJsonAllPlaces();
+                pollService.printContext(json);
             }
         }
     }
@@ -161,7 +168,7 @@ public class HallServlet extends HttpServlet {
     private HttpSession getSession(HttpServletRequest req) {
         HttpSession session = req.getSession();
         synchronized (session) {
-            session.setMaxInactiveInterval(SESSION_INACTIVE_INTERVAL);
+            session.setMaxInactiveInterval(SESSION_LIVES);
         }
         return session;
     }

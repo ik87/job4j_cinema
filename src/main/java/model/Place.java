@@ -58,12 +58,5 @@ public class Place {
     public void setPrice(float price) {
         this.price = price;
     }
-/*    @Override
-    public String toString() {
-        return "Place{" +
-                "place='" + place + '\'' +
-                ", state=" + state +
-                ", account=" + account +
-                '}';
-    }*/
+
 }

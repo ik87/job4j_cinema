@@ -3,7 +3,6 @@ package model;
 import java.util.Objects;
 
 public class PlaceDTO {
-    public static final int FREE = 1;
     public static final int RESERVED = 2;
 
     private String place;

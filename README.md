@@ -20,6 +20,9 @@ Detect browser or tab closing
 - https://stackoverflow.com/questions/3888902/detect-browser-or-tab-closing
 - https://stackoverflow.com/a/20853978/5984851
 
+Reloading a page when using browser back button
+- https://stackoverflow.com/questions/43043113/how-to-force-reloading-a-page-when-using-browser-back-button
+
 Load Java HttpSession from JSESSIONID
 - https://stackoverflow.com/a/3092495/5984851
 

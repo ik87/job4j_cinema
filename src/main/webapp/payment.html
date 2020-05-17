@@ -3,6 +3,7 @@
 <head>
     <!-- Required meta tags -->
     <meta charset="utf-8">
+    <meta http-equiv="Pragma" content="no-cache">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <!-- Bootstrap CSS -->
@@ -44,13 +45,14 @@
 </div>
 <script>
 
+
     $(function () {
         //get ajax data for current session
         $.get("serv", {action: 'payment'})
             .done(function (data) {
                 console.log(data);
                 cost(data);
-            }).fail(function() {
+            }).fail(function () {
             let text = `<div class="jumbotron">
                             <h1 class="display-4">Неизвестная ошибка</h1>
                             <a class="btn btn-primary btn-lg" href="/" role="button">вернуться назад</a>
@@ -58,6 +60,15 @@
             $(".container").html(text);
         });
 
+
+
+        if (performance.navigation.type == 1) {
+            close();
+        }
+
+        $(window).bind('unload', function(){
+            close();
+        });
     });
 
     $("button").click(function () {
@@ -75,7 +86,7 @@
                             <a class="btn btn-primary btn-lg" href="/" role="button">вернуться назад</a>
                             </div>`;
                 $(".container").html(text);
-            }).fail(function() {
+            }).fail(function () {
             let text = `<div class="jumbotron">
                             <h1 class="display-4">Неизвестная ошибка</h1>
                             <a class="btn btn-primary btn-lg" href="/" role="button">вернуться назад</a>
@@ -84,6 +95,10 @@
         });
     });
 
+    function close() {
+        $.post("serv", {action: "close"});
+    }
+
     function cost(data) {
         let head = "Вы выбрали:<br>";
         let places = "";
@@ -91,14 +106,23 @@
         for (i = 0; i < data.length; i++) {
             let result = data[i].place.match(/(.+)\.(.+)/);
             places +=
-                "ряд " + result[1] + " место, " + result[2]
-                + " цена: " + data[i].price + " рублей <br>";
+                "ряд " + result[1] + " место " + result[2]
+                + ", цена: " + data[i].price + " рублей <br>";
             sum += data[i].price;
         }
 
         $("h3").html(head + places + "<hr> Сумма " + sum + " рублей");
     }
 
+    window.addEventListener( "pageshow", function ( event ) {
+        var historyTraversal = event.persisted ||
+            ( typeof window.performance != "undefined" &&
+                window.performance.navigation.type === 2 );
+        if ( historyTraversal ) {
+            // Handle page restore.
+            window.location.reload();
+        }
+    });
 </script>
 </body>
 </html>

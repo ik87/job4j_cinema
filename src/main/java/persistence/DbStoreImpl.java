@@ -9,10 +9,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class DbStoreImpl implements DbStore {
+public class DbStoreImpl implements Store {
 
     private final static BasicDataSource POOL_CONNECTIONS = new BasicDataSource();
-    private final static DbStore INSTANCE = new DbStoreImpl();
+    private final static Store INSTANCE = new DbStoreImpl();
 
 
     private DbStoreImpl() {
@@ -31,17 +31,16 @@ public class DbStoreImpl implements DbStore {
         }
     }
 
-    public static DbStore getInstance() {
+    public static Store getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public boolean setPlace(Collection<Place> places) {
+    public boolean setPlace(Collection<Place> places, Account account) {
         boolean success = true;
         String sql = "UPDATE hall set state = ?, account_id = ? WHERE place = ?";
         try (Connection conn = POOL_CONNECTIONS.getConnection()) {
             conn.setAutoCommit(false);
-            Account account = places.stream().findFirst().get().getAccount();
             Integer account_id = addAccount(conn, account);
             try (PreparedStatement pstm = conn.prepareStatement(sql)) {
                 for (Place place : places) {
@@ -50,10 +49,7 @@ public class DbStoreImpl implements DbStore {
                     pstm.setString(3, place.getPlace());
                     pstm.executeUpdate();
                 }
-
-
                 conn.commit();
-
             } catch (Exception e) {
                 success = false;
                 conn.rollback();
@@ -130,7 +126,7 @@ public class DbStoreImpl implements DbStore {
 
     }
 
-    String createNewTableSql() {
+   private String createNewTableSql() {
         return "DROP TABLE hall;"
                 + "DROP TABLE Account;"
 
