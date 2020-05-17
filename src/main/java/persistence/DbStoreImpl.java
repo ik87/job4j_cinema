@@ -17,7 +17,7 @@ public class DbStoreImpl implements Store {
 
     private DbStoreImpl() {
         try {
-            URI dbUri = new URI(System.getenv("DB_JOB4j_CINEMA"));
+            URI dbUri = new URI(System.getenv("DATABASE_URL"));
             String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + dbUri.getPath();
             if (dbUri.getUserInfo() != null) {
                 POOL_CONNECTIONS.setUsername(dbUri.getUserInfo().split(":")[0]);
