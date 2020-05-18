@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 100 ">
+    <style>
+    .free, .reserved, .chose {
+    stroke: black;
+    }
+
+    .free {
+    fill: green;
+    }
+
+    .reserved {
+    fill: red;
+    }
+
+    .chose {
+    fill: #d1d11f;
+    }
+    text {
+        font-size: 18px;
+        }
+    </style>
+    <rect class="free" width="60" height="60" x="5" y="0.5" rx="10" ry="10"/>
+    <rect class="reserved" width="60" height="60" x="120" y="0.5" rx="10" ry="10"/>
+    <rect class="chose" width="60" height="60" x="230" y="0.5" rx="10" ry="10"/>
+    <!-- <rect class="chose" width="140" height="70" x="490" y="0.5" rx="10" ry="10"/>-->
+    <text x="17" y="80">free</text>
+    <text x="117" y="80">reserved</text>
+    <text x="237" y="80">chose</text>
+</svg>

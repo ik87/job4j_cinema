@@ -1,0 +1,15 @@
+.free, .reserved, .chose {
+    stroke: black;
+}
+
+.free {
+    fill: green;
+}
+
+.reserved {
+    fill: red;
+}
+
+.chose {
+    fill: #d1d11f;
+}

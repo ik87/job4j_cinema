@@ -29,6 +29,9 @@ Load Java HttpSession from JSESSIONID
 GSON, json Serialization/Deserialization
 - https://habr.com/ru/post/253266/
 
+Bootstrap UI credit card
+- https://bootstrapious.com/p/bootstrap-credit-card-form
+
 Long polling
 - https://www.oracle.com/webfolder/technetwork/tutorials/obe/java/async-servlet/async-servlets.html
 - https://gist.github.com/ngugijames/c3eaf929f3512def986b
