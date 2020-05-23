@@ -1,13 +1,14 @@
 #  Выбор места в кинотеатре
-
+![Heroku](https://cinema-job4j.herokuapp.com/?app=cinema-job4j&style=flat&svg=1)
 пет-проект "Выбор места в кинотеатре"
-
+ * демонстрация:  https://cinema-job4j.herokuapp.com/
 ### Использованные средства:
 
 * [Bootstrap](getbootstrap.com) - для реализации UI
 * [J2EE](https://www.oracle.com/technetwork/java/javaee/) - JPA, Servlet, Listener
 * [Apache Tomcat](http://tomcat.apache.org/) - контейнер сервлетов
 * [POSTGRESQL](https://www.postgresql.org/) - база данных
+* [liquibase](https://liquibase.org/) - отслеживание и изменение БД
 * [Junit](https://junit.org/), [powermock](https://www.postgresql.org/) - тестирование
 * [GSON](https://github.com/google/gson) - сериализация и десериализация Java объектов в JSON
 

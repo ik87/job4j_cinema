@@ -94,6 +94,26 @@
         </executions>
       </plugin>
       <plugin>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-maven-plugin</artifactId>
+        <version>3.6.2</version>
+        <configuration>
+          <changeLogFile>${basedir}/src/main/resources/db/master.xml</changeLogFile>
+          <url>${db.url}/job4j_cinema</url>
+          <driver>${db.driver}</driver>
+          <username>${db.username}</username>
+          <password>${db.password}</password>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>update</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.8.3</version>
@@ -127,6 +147,24 @@
                   <version>9.0.30.0</version>
                   <destFileName>webapp-runner.jar</destFileName>
                 </artifactItem>
+                <artifactItem>
+                  <groupId>org.liquibase</groupId>
+                  <artifactId>liquibase-core</artifactId>
+                  <version>3.4.1</version>
+                  <destFileName>liquibase.jar</destFileName>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.yaml</groupId>
+                  <artifactId>snakeyaml</artifactId>
+                  <version>1.13</version>
+                  <outputDirectory>${project.build.directory}/dependency/lib</outputDirectory>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.postgresql</groupId>
+                  <artifactId>postgresql</artifactId>
+                  <version>9.4-1204-jdbc41</version>
+                  <destFileName>postgres.jar</destFileName>
+                </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
@@ -143,4 +181,36 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>travis</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <db.url>jdbc:postgresql://localhost</db.url>
+        <db.username>postgres</db.username>
+        <db.password></db.password>
+        <db.driver>org.postgresql.Driver</db.driver>
+      </properties>
+    </profile>
+    <profile>
+      <id>test</id>
+      <properties>
+        <db.url>jdbc:postgresql://127.0.0.1:5432</db.url>
+        <db.username>postgres</db.username>
+        <db.password>password</db.password>
+        <db.driver>org.postgresql.Driver</db.driver>
+      </properties>
+    </profile>
+    <profile>
+      <id>production</id>
+      <properties>
+        <db.url>jdbc:postgresql://127.0.0.1:5432</db.url>
+        <db.username>postgres</db.username>
+        <db.password>password</db.password>
+        <db.driver>org.postgresql.Driver</db.driver>
+      </properties>
+    </profile>
+  </profiles>
 </project>
