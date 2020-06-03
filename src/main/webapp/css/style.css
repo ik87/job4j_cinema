@@ -4,7 +4,7 @@ body {
     background-color: #e8cbc0;
     background-image: linear-gradient(147deg, #e8cbc0 0%, #636fa4 100%);
 }
-@media all and (min-height: 600px) {
+@media all and (min-height: 620px) {
     footer {
         position:fixed;
         bottom:15px;

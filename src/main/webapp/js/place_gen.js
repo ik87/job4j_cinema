@@ -16,11 +16,11 @@ var scheme = [
 createPlacesSVG(80, 15, scheme);
 
 // set status
-let status = [
+/*let status = [
     {place: "1.1", state: FREE},
     {place: "2.2", state: RESERVED},
     {place: "3.3", state: RESERVED}
-];
+];*/
 
 
 
@@ -54,6 +54,7 @@ function createPlacesSVG(size, offset, scheme) {
             if (scheme[row][cell] != 0) {
                 var place = document.createElementNS(xmlns, "rect");
                 place.setAttributeNS(null, "id", row + 1 + "." + p++);
+                place.setAttributeNS(null, "class", "free");
                 place.setAttributeNS(null, "height", size);
                 place.setAttributeNS(null, "width", size);
                 place.setAttributeNS(null, "rx", size / 4.7);
