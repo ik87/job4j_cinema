@@ -24,6 +24,6 @@
     <rect class="chose" width="60" height="60" x="230" y="0.5" rx="10" ry="10"/>
     <!-- <rect class="chose" width="140" height="70" x="490" y="0.5" rx="10" ry="10"/>-->
     <text x="17" y="80">free</text>
-    <text x="117" y="80">reserved</text>
+    <text x="115" y="80">reserved</text>
     <text x="237" y="80">chose</text>
 </svg>
