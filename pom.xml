@@ -151,7 +151,7 @@
                 <artifactItem>
                   <groupId>org.postgresql</groupId>
                   <artifactId>postgresql</artifactId>
-                  <version>9.4-1204-jdbc41</version>
+                  <version>42.2.1</version>
                   <destFileName>postgres.jar</destFileName>
                 </artifactItem>
               </artifactItems>

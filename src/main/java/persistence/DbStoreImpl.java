@@ -18,7 +18,7 @@ public class DbStoreImpl implements Store {
     private DbStoreImpl() {
         try {
             URI dbUri = new URI(System.getenv("DATABASE_URL"));
-            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + dbUri.getPath();
+            String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + dbUri.getPath() + "?sslmode=require";
             if (dbUri.getUserInfo() != null) {
                 POOL_CONNECTIONS.setUsername(dbUri.getUserInfo().split(":")[0]);
                 POOL_CONNECTIONS.setPassword(dbUri.getUserInfo().split(":")[1]);
